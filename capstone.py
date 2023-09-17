@@ -1,105 +1,82 @@
-class Expense:
-    def __init__(self, description, amount, category, date):
-        self.description = description
-        self.amount = amount
-        self.category = category
-        self.date = date
-
-    def __str__(self):
-        return f"Description: {self.description}, Amount: ₹{self.amount}, Category: {self.category}, Date: {self.date}"
-
-
-class Category:
-    def __init__(self, name):
-        self.name = name
+class ExpenseTracker:
+    def __init__(self):
         self.expenses = []
+        self.income = 0
 
-    def add_expense(self, expense):
-        self.expenses.append(expense)
+    def add_expense(self, category, amount, description, date):
+        self.expenses.append({
+            'category': category,
+            'amount': amount,
+            'description': description,
+            'date': date
+        })
 
-    def get_total_expenses(self):
-        return sum(expense.amount for expense in self.expenses)
+    def add_income(self, amount):
+        self.income += amount
 
+    def calculate_balance(self):
+        total_expenses = sum(expense['amount'] for expense in self.expenses)
+        balance = self.income - total_expenses
+        return balance
 
-class User:
-    def __init__(self, username):
-        self.username = username
-        self.wallet = 0
-        self.categories = {}
+    def view_expenses(self, category=None, start_date=None, end_date=None):
+        filtered_expenses = self.expenses
+        if category:
+            filtered_expenses = [expense for expense in filtered_expenses if expense['category'] == category]
+        if start_date:
+            filtered_expenses = [expense for expense in filtered_expenses if expense['date'] >= start_date]
+        if end_date:
+            filtered_expenses = [expense for expense in filtered_expenses if expense['date'] <= end_date]
 
-    def add_category(self, category_name):
-        if category_name not in self.categories:
-            self.categories[category_name] = Category(category_name)
-        else:
-            print(f"Category '{category_name}' already exists.")
-
-    def add_expense(self, category_name, expense):
-        if category_name in self.categories:
-            category = self.categories[category_name]
-            category.add_expense(expense)
-            self.wallet -= expense.amount
-            print(f"Expense added to '{category_name}': {expense.description}")
-        else:
-            print(f"Category '{category_name}' does not exist.")
-
-    def view_balance(self):
-        return f"Current Balance for {self.username}: ₹{self.wallet}"
-
-    def view_categories(self):
-        return "\n".join(self.categories.keys())
-
-    def view_expenses(self, category_name=None):
-        if category_name:
-            if category_name in self.categories:
-                return "\n".join([str(expense) for expense in self.categories[category_name].expenses])
-            else:
-                return f"Category '{category_name}' does not exist."
-        else:
-            all_expenses = []
-            for category in self.categories.values():
-                all_expenses.extend(category.expenses)
-            return "\n".join([str(expense) for expense in all_expenses])
+        total = sum(expense['amount'] for expense in filtered_expenses)
+        
+        print("Category\tAmount\tDescription\tDate")
+        print("-----------------------------------------------")
+        for expense in filtered_expenses:
+            print(f"{expense['category']}\t{expense['amount']}\t{expense['description']}\t{expense['date']}")
+        print("-----------------------------------------------")
+        print(f"Total Expenses\t{total}")
+        print(f"Income\t{self.income}")
+        print(f"Balance\t{self.calculate_balance()}")
 
 
 def main():
-    username = input("Enter your username: ")
-    user = User(username)
+    tracker = ExpenseTracker()
 
     while True:
         print("\nExpense Tracker Menu:")
-        print("1. Add Category")
-        print("2. Add Expense")
-        print("3. View Balance")
-        print("4. View Categories")
-        print("5. View Expenses")
-        print("6. Exit")
+        print("1. Add Expense")
+        print("2. Add Income")
+        print("3. View Expenses")
+        print("4. Exit")
 
-        choice = input("Enter your choice: ")
+        choice = input("Enter your choice (1/2/3/4): ")
 
-        if choice == '1':
-            category_name = input("Enter category name: ")
-            user.add_category(category_name)
-        elif choice == '2':
-            category_name = input("Enter category name: ")
+        if choice == "1":
+            category = input("Enter expense category: ")
+            amount = float(input("Enter expense amount: "))
             description = input("Enter expense description: ")
-            amount = float(input("Enter expense amount: ₹"))
-            date = input("Enter expense date (yyyy-mm-dd): ")
-            expense = Expense(description, amount, category_name, date)
-            user.add_expense(category_name, expense)
-        elif choice == '3':
-            print(user.view_balance())
-        elif choice == '4':
-            print("Categories:")
-            print(user.view_categories())
-        elif choice == '5':
-            category_name = input("Enter category name (leave blank to view all expenses): ")
-            print("Expenses:")
-            print(user.view_expenses(category_name))
-        elif choice == '6':
+            date = input("Enter expense date (YYYY-MM-DD): ")
+            tracker.add_expense(category, amount, description, date)
+            print("Expense added successfully!")
+
+        elif choice == "2":
+            income = float(input("Enter income amount: "))
+            tracker.add_income(income)
+            print("Income added successfully,working hard i see!")
+
+        elif choice == "3":
+            category = input("Enter category to filter (leave empty for all): ")
+            start_date = input("Enter start date (leave empty for all): ")
+            end_date = input("Enter end date (leave empty for all): ")
+            tracker.view_expenses(category, start_date, end_date)
+
+        elif choice == "4":
             print("Exiting Expense Tracker.Spend wisely as money doesnt grow on trees and you work hard!")
             break
+
         else:
-            print("oops something went wrong! try again.psst make sure to pick a number between 1/2/3/4/5/6")
+            print("Invalid choice. Please choose a valid option (1/2/3/4).")
 
 
 if __name__ == "__main__":
